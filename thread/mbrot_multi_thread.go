@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/draw"
 	"image/png"
+	"log"
 	"math/cmplx"
 	"math/rand"
 	"os"
 	"sync"
 	"time"
+
+	// "time"
 )
 const (
 	maxEsc = 30
@@ -18,7 +20,7 @@ const (
 	rMax   = .5
 	iMin   = -1.
 	iMax   = 1.
-	width  = 640
+	width  = 7000
 )
 
 var palette []color.RGBA
@@ -76,15 +78,13 @@ func render(done chan struct{}) {
 	bounds := image.Rect(0, 0, width, height)
 
 	b := image.NewNRGBA(bounds)
-	draw.Draw(b, bounds, image.NewUniform(color.Black), image.ZP, draw.Src)
-
+	//draw.Draw(b, bounds, image.NewUniform(color.Black), image.ZP, draw.Src)
+	wgx.Add(width)
 	for x := 0; x < width; x++ {
-
-		wgx.Add(4)
 		go func(xx int) {
 			defer wgx.Done()
 			for y := 0; y < height; y++ {
-				coord := complex(float64(x)/scale+rMin, float64(y)/scale+iMin)
+				coord := complex(float64(xx)/scale+rMin, float64(y)/scale+iMin)
 				fEsc := mandelbrot(coord)
 				if fEsc == maxEsc - 1 {
 					b.Set(xx, y, escapeColor)
@@ -95,16 +95,19 @@ func render(done chan struct{}) {
 		}(x)
 	}
 	wgx.Wait()
-	f, err := os.Create("mandelbrot_.png")
+	done <- struct{}{}
+	f, _ := os.Create("thread/mandelbrot_.png")
+
+	err := png.Encode(f, b)
+
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Println("png.Encode:", err)
 	}
+
 	if err = png.Encode(f, b); err != nil {
 		fmt.Println(err)
 	}
 	if err = f.Close(); err != nil {
 		fmt.Println(err)
 	}
-	done <- struct{}{}
 }

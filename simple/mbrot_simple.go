@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/draw"
 	"image/png"
+	"log"
 	"math/cmplx"
 	"math/rand"
 	"os"
@@ -17,7 +17,7 @@ const (
 	rMax   = .5
 	iMin   = -1.
 	iMax   = 1.
-	width  = 7680
+	width  = 7000
 )
 
 var palette []color.RGBA
@@ -52,7 +52,7 @@ func main() {
 	bounds := image.Rect(0, 0, width, height)
 
 	b := image.NewNRGBA(bounds)
-	draw.Draw(b, bounds, image.NewUniform(color.Black), image.ZP, draw.Src)
+	// draw.Draw(b, bounds, image.NewUniform(color.Black), image.ZP, draw.Src)
 
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
@@ -65,11 +65,14 @@ func main() {
 
 		}
 	}
-	f, err := os.Create("mandelbrot.png")
+	f, _ := os.Create("thread/mandelbrot_.png")
+
+	err := png.Encode(f, b)
+
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Println("png.Encode:", err)
 	}
+
 	if err = png.Encode(f, b); err != nil {
 		fmt.Println(err)
 	}
