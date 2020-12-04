@@ -47,13 +47,15 @@ func main() {
 	ticker := time.NewTicker(time.Millisecond * 1000)
 
 	go func() {
+		i := 0
 		for {
 			select {
 			case <-ticker.C:
 				fmt.Print(".")
+				i++
 			case <-done:
 				ticker.Stop()
-				fmt.Printf("\n\nMandelbrot set rendered into `%s`\n", "mandelbrot_.png")
+				fmt.Printf("\n\nMandelbrot set rendered into `%s` in %d seconds\n", "mandelbrot_.png", i)
 			}
 		}
 	}()
