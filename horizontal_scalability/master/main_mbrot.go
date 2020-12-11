@@ -124,8 +124,8 @@ func main() {
 		newRect := image.Rectangle{
 			Min: img1.Bounds().Min,
 			Max: image.Point{
-				X: img2.Bounds().Max.X,
-				Y: img2.Bounds().Max.Y + img1.Bounds().Max.Y,
+				Y: img2.Bounds().Max.Y,
+				X: img2.Bounds().Max.X + img1.Bounds().Max.X,
 			},
 		}
 		finImage := image.NewRGBA(newRect)
