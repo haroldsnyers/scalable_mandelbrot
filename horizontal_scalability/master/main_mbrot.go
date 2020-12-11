@@ -115,7 +115,7 @@ func main() {
 		// collect pixel data from each image
 		pixels1 := DecodePixelsFromImage(img1, 0, 0)
 		// the second image has a Y-offset of img1's max Y (appended at bottom)
-		pixels2 := DecodePixelsFromImage(img2, 0, img1.Bounds().Max.Y)
+		pixels2 := DecodePixelsFromImage(img2, img1.Bounds().Max.X, 0)
 		pixelSum := append(pixels1, pixels2...)
 
 
@@ -124,8 +124,8 @@ func main() {
 		newRect := image.Rectangle{
 			Min: img1.Bounds().Min,
 			Max: image.Point{
-				X: img2.Bounds().Max.X,
-				Y: img2.Bounds().Max.Y + img1.Bounds().Max.Y,
+				Y: img2.Bounds().Max.Y,
+				X: img2.Bounds().Max.X + img1.Bounds().Max.X,
 			},
 		}
 		finImage := image.NewRGBA(newRect)
