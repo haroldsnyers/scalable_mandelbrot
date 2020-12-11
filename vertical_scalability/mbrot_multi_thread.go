@@ -55,6 +55,9 @@ func main() {
 			case <-ticker.C:
 				fmt.Print(".")
 				i++
+				if i%15 == 0 {
+					fmt.Print(i)
+				}
 			case <-done:
 				ticker.Stop()
 				fmt.Printf("\n\nMandelbrot set rendered into `%s` in %d seconds\n", "mandelbrot_.png", i)

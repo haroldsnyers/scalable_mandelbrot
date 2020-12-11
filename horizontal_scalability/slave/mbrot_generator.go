@@ -1,6 +1,7 @@
 package main
 
 import (
+	"../src/github.com/oliamb/cutter"
 	"bytes"
 	"fmt"
 	"image"
@@ -25,7 +26,7 @@ const (// à changer en fct du ask
 	rMax   = .5
 	iMin   = -1.
 	iMax   = 1.
-	width  = 7000
+	width  = 1200
 )
 
 var palette []color.RGBA
@@ -63,8 +64,14 @@ func getMbrot(w http.ResponseWriter, req *http.Request) {
 
 	render(done)
 
+	croppedImg, _ := cutter.Crop(b, cutter.Config{
+		Width:  width/2,
+		Height: height,
+		Anchor: image.Point{0, height},
+	})
+
 	buffer := new(bytes.Buffer)
-	if err := jpeg.Encode(buffer, b, nil); err != nil {
+	if err := jpeg.Encode(buffer, croppedImg, nil); err != nil {
 		log.Println("unable to encode image.")
 	}
 
@@ -107,8 +114,8 @@ func render(done chan struct{}, ) {
 	escapeColor = color.RGBA{0, 0, 0, 0}
 
 	//draw.Draw(b, bounds, image.NewUniform(color.Black), image.ZP, draw.Src)
-	wgx.Add(width)
-	for x := 0; x < width; x++ {
+	wgx.Add(width/2)
+	for x := 0; x < width/2; x++ {
 		go func(xx int) {
 			defer wgx.Done()
 			for y := 0; y < height; y++ {
