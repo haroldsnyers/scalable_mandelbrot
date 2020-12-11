@@ -96,9 +96,11 @@ func render(done chan struct{}) {
 			}
 		}(x)
 	}
+	fmt.Print(b)
 	wgx.Wait()
 	done <- struct{}{}
-	f, _ := os.Create("thread/mandelbrot_.png")
+
+	f, _ := os.Create("vertical_scalability/mandelbrot_.png")
 
 	err := png.Encode(f, b)
 

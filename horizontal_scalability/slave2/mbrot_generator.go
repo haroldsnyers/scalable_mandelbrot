@@ -6,20 +6,14 @@ import (
 	"image"
 	"image/color"
 	"image/jpeg"
-	"image/png"
 	"log"
 	"math/cmplx"
 	"math/rand"
 	"net/http"
-	"os"
 	"strconv"
 	"sync"
 	"time"
 )
-
-type Foo struct {
-	Bar string
-}
 
 const (// à changer en fct du ask
 	maxEsc = 30
@@ -29,8 +23,6 @@ const (// à changer en fct du ask
 	iMax   = 1.
 	width  = 7000
 )
-
-var foo []Foo
 
 var palette []color.RGBA
 var escapeColor color.RGBA
@@ -96,7 +88,7 @@ func main() {
 
 	http.HandleFunc("/get_mbrot", getMbrot)
 
-	log.Fatal(http.ListenAndServe(":8091", nil))
+	log.Fatal(http.ListenAndServe(":8093", nil))
 }
 
 func render(done chan struct{}, ) {
@@ -128,19 +120,4 @@ func render(done chan struct{}, ) {
 	}
 	wgx.Wait()
 	done <- struct{}{}
-
-	f, _ := os.Create("horizontal_scalability/slave/mandelbrot_.png")
-
-	err := png.Encode(f, b)
-
-	if err != nil {
-		log.Println("png.Encode:", err)
-	}
-
-	if err = png.Encode(f, b); err != nil {
-		fmt.Println(err)
-	}
-	if err = f.Close(); err != nil {
-		fmt.Println(err)
-	}
 }

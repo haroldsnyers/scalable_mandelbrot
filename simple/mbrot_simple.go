@@ -9,6 +9,7 @@ import (
 	"math/cmplx"
 	"math/rand"
 	"os"
+	"time"
 )
 
 const (
@@ -37,6 +38,29 @@ func mandelbrot(a complex128) int {
 }
 
 func main() {
+
+	done := make(chan struct{})
+	ticker := time.NewTicker(time.Millisecond * 1000)
+
+	go func() {
+		i := 0
+		for {
+			select {
+			case <-ticker.C:
+				fmt.Print(".")
+				i++
+			case <-done:
+				ticker.Stop()
+				fmt.Printf("\n\nMandelbrot set rendered into `%s` in %d seconds\n", "mandelbrot_.png", i)
+			}
+		}
+	}()
+
+	render(done)
+
+}
+
+func render(done chan struct{}) {
 	palette = make([]color.RGBA, maxEsc)
 	for i := 0; i < maxEsc-1; i++ {
 		palette[i] = color.RGBA{
@@ -65,7 +89,8 @@ func main() {
 
 		}
 	}
-	f, _ := os.Create("thread/mandelbrot_.png")
+	done <- struct{}{}
+	f, _ := os.Create("vertical_scalability/mandelbrot_.png")
 
 	err := png.Encode(f, b)
 
