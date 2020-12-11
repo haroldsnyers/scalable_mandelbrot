@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 )
 
 // Create a struct to deal with pixel
@@ -19,6 +20,11 @@ type Pixel struct {
 	Point image.Point
 	Color color.Color
 }
+
+var resp1 *http.Response
+var err1 error
+var resp2 *http.Response
+var err2 error
 
 // Keep it DRY so don't have to repeat opening file and decode
 func OpenAndDecode(filepath string) (image.Image, string, error) {
@@ -48,10 +54,26 @@ func DecodePixelsFromImage(img image.Image, offsetX, offsetY int) []*Pixel {
 	}
 	return pixels
 }
+//interactions with the slaves
+func get(port int, wg *sync.WaitGroup){
+	if port == 8092{
+		resp1, err1 = http.Get("http://localhost:8092/get_mbrot")
+		defer wg.Done()
+	}else{
+		resp2, err2 = http.Get("http://localhost:8093/get_mbrot")
+		defer wg.Done()
+	}
+}
 
 func main() {
-	resp1, err1 := http.Get("http://localhost:8092/get_mbrot")
-	resp2, err2 := http.Get("http://localhost:8093/get_mbrot")
+	//go routine for the slaves
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go get(8092, &wg)
+	wg.Add(1)
+	go get(8093, &wg)
+	wg.Wait()
+
 	if err1 == nil && err2 == nil{
 
 		data1, errorRead1 := ioutil.ReadAll(resp1.Body)
