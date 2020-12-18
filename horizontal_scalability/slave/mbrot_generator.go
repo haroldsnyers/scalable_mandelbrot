@@ -26,7 +26,7 @@ const (// à changer en fct du ask
 	rMax   = .5
 	iMin   = -1.
 	iMax   = 1.
-	width  = 1200
+	width  = 7000
 )
 
 var palette []color.RGBA
@@ -38,6 +38,8 @@ var height int
 var bounds image.Rectangle
 
 var b *image.NRGBA
+var total int
+var id int
 
 func getMbrot(w http.ResponseWriter, req *http.Request) {
 	scale = width / (rMax - rMin)
@@ -45,6 +47,10 @@ func getMbrot(w http.ResponseWriter, req *http.Request) {
 	bounds = image.Rect(0, 0, width, height)
 
 	b = image.NewNRGBA(bounds)
+
+	_ = req.ParseForm()
+	id, _ = strconv.Atoi(req.FormValue("id"))
+	total, _ = strconv.Atoi(req.FormValue("total"))
 
 	done := make(chan struct{})
 	ticker := time.NewTicker(time.Millisecond * 1000)
@@ -65,9 +71,9 @@ func getMbrot(w http.ResponseWriter, req *http.Request) {
 	render(done)
 
 	croppedImg, _ := cutter.Crop(b, cutter.Config{
-		Width:  width/2,
+		Width:  width/total,
 		Height: height,
-		Anchor: image.Point{0, height},
+		Anchor: image.Point{id*(width/total), 0},
 	})
 
 	buffer := new(bytes.Buffer)
@@ -114,8 +120,9 @@ func render(done chan struct{}, ) {
 	escapeColor = color.RGBA{0, 0, 0, 0}
 
 	//draw.Draw(b, bounds, image.NewUniform(color.Black), image.ZP, draw.Src)
-	wgx.Add(width/2)
-	for x := 0; x < width/2; x++ {
+
+	wgx.Add(width/total)
+	for x := id*(width/total); x <(id+1)*(width/total); x++ {
 		go func(xx int) {
 			defer wgx.Done()
 			for y := 0; y < height; y++ {

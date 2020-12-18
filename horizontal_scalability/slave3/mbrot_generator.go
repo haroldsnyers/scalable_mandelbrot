@@ -48,7 +48,6 @@ func getMbrot(w http.ResponseWriter, req *http.Request) {
 	id, _ = strconv.Atoi(req.FormValue("id"))
 	total, _ = strconv.Atoi(req.FormValue("total"))
 
-
 	done := make(chan struct{})
 	ticker := time.NewTicker(time.Millisecond * 1000)
 	go func() {
@@ -102,7 +101,7 @@ func main() {
 
 	http.HandleFunc("/get_mbrot", getMbrot)
 
-	log.Fatal(http.ListenAndServe(":8093", nil))
+	log.Fatal(http.ListenAndServe(":8094", nil))
 }
 
 func render(done chan struct{}, ) {

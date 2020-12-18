@@ -11,7 +11,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"strconv"
 	"sync"
 )
 
@@ -21,10 +23,13 @@ type Pixel struct {
 	Color color.Color
 }
 
-var resp1 *http.Response
-var err1 error
-var resp2 *http.Response
-var err2 error
+var resp [100]*http.Response
+var err [100]error
+var errRead [100]error
+var errImg [100]error
+var data [100][]byte
+var picture [100]image.Image
+var pixels [100][]*Pixel
 
 // Keep it DRY so don't have to repeat opening file and decode
 func OpenAndDecode(filepath string) (image.Image, string, error) {
@@ -55,44 +60,56 @@ func DecodePixelsFromImage(img image.Image, offsetX, offsetY int) []*Pixel {
 	return pixels
 }
 //interactions with the slaves
-func get(port int, wg *sync.WaitGroup){
-	if port == 8092{
-		resp1, err1 = http.Get("http://localhost:8092/get_mbrot")
+func get(port string, name string, id int,total int,wg *sync.WaitGroup){
+
+		data := url.Values {
+		"total": {strconv.Itoa(total)},
+		"id": {strconv.Itoa(id)},
+		}
+		resp[id], err[id] = http.PostForm("http://"+ name +":"+ port +"/get_mbrot",data)
 		defer wg.Done()
-	}else{
-		resp2, err2 = http.Get("http://localhost:8093/get_mbrot")
-		defer wg.Done()
+
+}
+
+func check() bool{
+	for i:=0; i< len(err);i ++{
+		if err[i]!= nil{
+			return false
+		}
 	}
+	return true
 }
 
 func main() {
 	//go routine for the slaves
+	//get prox
+	liste := []string{"8092", "localhost", "8093", "localhost", "8094", "localhost"}
+	total := len(liste)/2
+
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go get(8092, &wg)
-	wg.Add(1)
-	go get(8093, &wg)
+	id := 0
+	for i := 0; i< len(liste);i+=2 {
+		wg.Add(1)
+		go get(liste[i], liste[i+1],id,total, &wg)
+		id++
+	}
 	wg.Wait()
 
-	if err1 == nil && err2 == nil{
 
-		data1, errorRead1 := ioutil.ReadAll(resp1.Body)
-		data2, errorRead2 := ioutil.ReadAll(resp2.Body)
+	if check(){
+		for i:=0;i< total;i++{
 
-		if errorRead1 != nil {
-			log.Fatalf("ioutil.ReadAll -> %v", errorRead1)
-		}
+			data[i], errRead[i] = ioutil.ReadAll(resp[i].Body)
 
-		if errorRead2 != nil {
-			log.Fatalf("ioutil.ReadAll -> %v", errorRead2)
-		}
+			if errRead[i] != nil {
+				log.Fatalf("ioutil.ReadAll -> %v", errRead[i])
+			}
+			_ = resp[i].Body.Close()
 
-		resp1.Body.Close()
-		resp2.Body.Close()
-
-		img1, _, err1 := image.Decode(bytes.NewReader(data1))
-		if err1 != nil {
-			panic(err1)
+			picture[i], _, errImg[i] = image.Decode(bytes.NewReader(data[i]))
+			if errImg[i] != nil {
+				panic(errImg[i])
+			}
 		}
 
 		out, _ := os.Create("horizontal_scalability/img.jpeg")
@@ -101,31 +118,37 @@ func main() {
 		var opts jpeg.Options
 		opts.Quality = 100
 
-		err1 = jpeg.Encode(out, img1, &opts)
+		errImg[0] = jpeg.Encode(out, picture[0], &opts)
 		//jpeg.Encode(out, img, nil)
-		if err1 != nil {
-			log.Println(err1)
+		if errImg[0] != nil {
+			log.Println(errImg[0])
 		}
 
-		img2, _, err2 := image.Decode(bytes.NewReader(data2))
-		if err2 != nil {
-			panic(err2)
+		for i:=1; i< total;i++{
+			picture[i], _, errImg[i] = image.Decode(bytes.NewReader(data[i]))
+			if errImg[i] != nil {
+				panic(errImg[i])
+			}
 		}
 
 		// collect pixel data from each image
-		pixels1 := DecodePixelsFromImage(img1, 0, 0)
-		// the second image has a Y-offset of img1's max Y (appended at bottom)
-		pixels2 := DecodePixelsFromImage(img2, img1.Bounds().Max.X, 0)
-		pixelSum := append(pixels1, pixels2...)
 
+		pixels[0] = DecodePixelsFromImage(picture[0], 0, 0)
+		pixelSum := append(pixels[0])
+		lengthX := (picture[0].Bounds().Max.X)*total
+		// the second image has a Y-offset of img1's max Y (appended at bottom)
+		for i:=1;i<total;i++{
+			pixels[i] = DecodePixelsFromImage(picture[i], (picture[i].Bounds().Max.X)*i, 0)
+			pixelSum = append(pixelSum,pixels[i]...)
+		}
 
 		// Set a new size for the new image equal to the max width
 		// of bigger image and max height of two images combined
 		newRect := image.Rectangle{
-			Min: img1.Bounds().Min,
+			Min: picture[0].Bounds().Min,
 			Max: image.Point{
-				Y: img2.Bounds().Max.Y,
-				X: img2.Bounds().Max.X + img1.Bounds().Max.X,
+				Y: picture[0].Bounds().Max.Y,
+				X: lengthX,
 			},
 		}
 		finImage := image.NewRGBA(newRect)
@@ -156,7 +179,6 @@ func main() {
 
 		log.Printf("I saved your image (%s) buddy!\n", filename)
 	} else {
-		fmt.Printf("The HTTP request 1 failed with error %s\n", err1)
-		fmt.Printf("The HTTP request 2 failed with error %s\n", err2)
+		fmt.Printf("The HTTP request failed with error %s\n", err)
 	}
 }
