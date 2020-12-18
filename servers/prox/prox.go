@@ -78,12 +78,12 @@ func getComputation(w http.ResponseWriter, req *http.Request) {
 func getStatus(w http.ResponseWriter, req *http.Request) {
 	list = nil
 
-	for key, _ := range serverMap {
+	for key, value := range serverMap {
 
 		var resp *http.Response
 		var err error
 
-		url:= fmt.Sprintf("http://localhost:%s/up", key)
+		url:= fmt.Sprintf("http://%s.resolute:%s/up", value, key)
 		resp, err = http.Get(url)
 
 		if err != nil {

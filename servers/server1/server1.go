@@ -24,7 +24,7 @@ func main() {
 	port = 8091
 
 	infoServer = map[string]string {
-		"name": "server3",
+		"name": "server1",
 		"port": fmt.Sprintf("%d", port),
 	}
 
@@ -32,7 +32,7 @@ func main() {
 	if err != nil {
 		print(err)
 	}
-	resp, err := http.Post("http://localhost:8090/prox_connected",
+	resp, err := http.Post("http://proxy.resolute:8090/prox_connected",
 		"application/json", bytes.NewBuffer(reqBody))
 	if err != nil {
 		print(err)

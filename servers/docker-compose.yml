@@ -1,0 +1,38 @@
+version: "3.1"
+services:
+  proxy:
+    build:
+      context: prox
+      dockerfile: Dockerfile
+    hostname: proxy
+    ports:
+      - 8090:8090
+    networks:
+      - resolute
+
+  server1:
+    build:
+      context: server1
+      dockerfile: Dockerfile
+    ports:
+      - 8091:8091
+    depends_on:
+      - proxy
+    networks:
+      - resolute
+
+  server2:
+    build:
+      context: server1
+      dockerfile: Dockerfile
+    ports:
+      - 8092:8092
+    depends_on:
+      - proxy
+    networks:
+      - resolute
+
+networks:
+  resolute:
+    external:
+      name: resolute
