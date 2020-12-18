@@ -15,14 +15,14 @@ import (
 	// "time"
 )
 const (
-	maxEsc = 30*3 // when doubled, takes a bit less than two times the generation time
+	maxEsc = 30*4 // when doubled, takes a bit less than two times the generation time
 	// r = -0.75 is the middle of the image (width)
 	rMin   = -2. // left
 	rMax   = .5 // right
 	// i = 0 is the middle of the image (height)
 	iMin   = -1.2 // bottom
 	iMax   = 1.2  // top
-	width  = 4000*2 // when doubled, takes a bit more than four times the generation time
+	width  = 4000*14 // when doubled, takes a bit more than four times the generation time
 )
 
 var palette []color.RGBA

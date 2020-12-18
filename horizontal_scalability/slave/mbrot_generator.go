@@ -16,17 +16,13 @@ import (
 	"time"
 )
 
-type Foo struct {
-	Bar string
-}
-
 const (// à changer en fct du ask
 	maxEsc = 30
 	rMin   = -2.
 	rMax   = .5
 	iMin   = -1.
 	iMax   = 1.
-	width  = 1200
+	width  = 4000
 )
 
 var palette []color.RGBA

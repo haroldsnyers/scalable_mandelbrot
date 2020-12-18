@@ -22,7 +22,7 @@ const (// à changer en fct du ask
 	rMax   = .5
 	iMin   = -1.
 	iMax   = 1.
-	width  = 1200
+	width  = 4000
 )
 
 var palette []color.RGBA
