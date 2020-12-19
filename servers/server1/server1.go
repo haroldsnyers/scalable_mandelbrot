@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 )
 
 var port int
@@ -21,10 +23,17 @@ func up(w http.ResponseWriter, req *http.Request) {
 
 func main() {
 	http.HandleFunc("/up", up)
-	port = 8091
+
+	var port int
+	var name string
+
+	port, _ = strconv.Atoi(os.Getenv("PORT"))
+	name = os.Getenv("NAME")
+
+	fmt.Printf("%s:%d", name, port)
 
 	infoServer = map[string]string {
-		"name": "server1",
+		"name": name,
 		"port": fmt.Sprintf("%d", port),
 	}
 
@@ -44,8 +53,6 @@ func main() {
 	}
 	fmt.Println(string(body))
 
-
 	addr:= fmt.Sprintf(":%d", port)
 	log.Fatal(http.ListenAndServe(addr, nil))
-
 }

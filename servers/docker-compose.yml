@@ -14,6 +14,9 @@ services:
     build:
       context: server1
       dockerfile: Dockerfile
+    environment:
+      - PORT=8091
+      - NAME=server1
     ports:
       - 8091:8091
     depends_on:
@@ -25,8 +28,39 @@ services:
     build:
       context: server1
       dockerfile: Dockerfile
+    environment:
+        - PORT=8092
+        - NAME=server2
     ports:
       - 8092:8092
+    depends_on:
+      - proxy
+    networks:
+      - resolute
+
+  server3:
+    build:
+      context: server1
+      dockerfile: Dockerfile
+    environment:
+      - PORT=8093
+      - NAME=server3
+    ports:
+      - 8093:8093
+    depends_on:
+      - proxy
+    networks:
+      - resolute
+
+  server4:
+    build:
+      context: server1
+      dockerfile: Dockerfile
+    environment:
+      - PORT=8094
+      - NAME=server4
+    ports:
+      - 8094:8094
     depends_on:
       - proxy
     networks:
