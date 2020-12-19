@@ -2,7 +2,7 @@ version: "3.1"
 services:
   proxy:
     build:
-      context: prox
+      context: proxy
       dockerfile: Dockerfile
     hostname: proxy
     ports:
@@ -12,7 +12,7 @@ services:
 
   server1:
     build:
-      context: server1
+      context: server
       dockerfile: Dockerfile
     environment:
       - PORT=8091
@@ -26,7 +26,7 @@ services:
 
   server2:
     build:
-      context: server1
+      context: server
       dockerfile: Dockerfile
     environment:
         - PORT=8092
@@ -40,7 +40,7 @@ services:
 
   server3:
     build:
-      context: server1
+      context: server
       dockerfile: Dockerfile
     environment:
       - PORT=8093
@@ -54,7 +54,7 @@ services:
 
   server4:
     build:
-      context: server1
+      context: server
       dockerfile: Dockerfile
     environment:
       - PORT=8094
