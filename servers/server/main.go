@@ -22,13 +22,15 @@ import (
 var infoServer map[string]string
 
 const (// à changer en fct du ask
-	maxEsc = 30
 	rMin   = -2.
 	rMax   = .5
-	iMin   = -1.
-	iMax   = 1.
-	width  = 7000
+	iMin   = -1.2
+	iMax   = 1.2
+	// width = 7000
 )
+
+var width int
+var maxEsc int
 
 var palette []color.RGBA
 var escapeColor color.RGBA
@@ -50,15 +52,33 @@ func up(w http.ResponseWriter, req *http.Request) {
 
 
 func getMbrot(w http.ResponseWriter, req *http.Request) {
-	scale = width / (rMax - rMin)
-	height = int(scale * (iMax - iMin))
-	bounds = image.Rect(0, 0, width, height)
+	log.Printf("Mandelbort Computation starting ... \n")
 
-	b = image.NewNRGBA(bounds)
+	query := req.URL.Query()
+	widthGet := query.Get("width")
+	maxEscGet := query.Get("escape")
+	if widthGet == "" {
+		width = 7000
+	} else {
+		width, _ = strconv.Atoi(widthGet)
+	}
+	if maxEscGet == "" {
+		maxEsc = 30
+	} else {
+		maxEsc, _ = strconv.Atoi(maxEscGet)
+	}
 
 	_ = req.ParseForm()
 	id, _ = strconv.Atoi(req.FormValue("id"))
 	total, _ = strconv.Atoi(req.FormValue("total"))
+
+	log.Printf("Mandelbrot generator : %d/%d\n", id + 1, total)
+
+	scale = float64(width) / (rMax - rMin)
+	height = int(scale * (iMax - iMin))
+	bounds = image.Rect(0, 0, width, height)
+
+	b = image.NewNRGBA(bounds)
 
 	done := make(chan struct{})
 	ticker := time.NewTicker(time.Millisecond * 1000)
@@ -67,11 +87,14 @@ func getMbrot(w http.ResponseWriter, req *http.Request) {
 		for {
 			select {
 			case <-ticker.C:
-				fmt.Print(".")
+				if i % 5 == 0 {
+					fmt.Print(".")
+				}
 				i++
 			case <-done:
 				ticker.Stop()
-				fmt.Printf("\n\nMandelbrot set rendered into `%s` in %d seconds\n", "mandelbrot_.png", i)
+				fmt.Print("\n")
+				log.Printf("Mandelbrot set rendered into `%s` in %d seconds", "mandelbrot_.png", i)
 			}
 		}
 	}()

@@ -17,6 +17,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"time"
 )
 
 type InfoServers struct {
@@ -40,20 +41,6 @@ var data [100][]byte
 var picture [100]image.Image
 var pixels [100][]*Pixel
 
-// Keep it DRY so don't have to repeat opening file and decode
-func OpenAndDecode(filepath string) (image.Image, string, error) {
-	imgFile, err := os.Open(filepath)
-	if err != nil {
-		panic(err)
-	}
-	defer imgFile.Close()
-	img, format, err := image.Decode(imgFile)
-	if err != nil {
-		panic(err)
-	}
-	return img, format, nil
-}
-
 // Decode image.Image's pixel data into []*Pixel
 func DecodePixelsFromImage(img image.Image, offsetX, offsetY int) []*Pixel {
 	pixels := []*Pixel{}
@@ -69,13 +56,17 @@ func DecodePixelsFromImage(img image.Image, offsetX, offsetY int) []*Pixel {
 	return pixels
 }
 //interactions with the slaves
-func get(port string, name string, id int,total int,wg *sync.WaitGroup){
-	fmt.Printf("server : %s", name)
+func get(port string, name string, id int,total int,wg *sync.WaitGroup, width string, escape string){
+	log.Printf("Send computation request to %s\n", name)
 	data := url.Values {
 		"total": {strconv.Itoa(total)},
 		"id": {strconv.Itoa(id)},
 	}
-	resp[id], err[id] = http.PostForm("http://localhost:"+ port +"/get_mbrot",data)
+	if width == "" {
+		resp[id], err[id] = http.PostForm("http://localhost:"+ port +"/get_mbrot",data)
+	} else {
+		resp[id], err[id] = http.PostForm("http://localhost:"+ port +"/get_mbrot?width=" + width + "&escape=" + escape ,data)
+	}
 	defer wg.Done()
 
 }
@@ -89,22 +80,42 @@ func check() bool{
 	return true
 }
 
-func main() {
-	getConnectedServers()
-	generateMandelBrot()
+func getMbrot(w http.ResponseWriter, req *http.Request) {
+	query := req.URL.Query()
+	width := query.Get("width")
+	if width == "" {
+		_, _ = fmt.Fprintf(w, "default width will used: 7000")
+	} else {
+		_, _ = fmt.Fprintf(w, "Width image will be %s", width)
+	}
+
+	//getConnectedServers()
+	//generateMandelBrot(width)
 }
 
-func generateMandelBrot() {
+func main() {
+	getConnectedServers()
+	generateMandelBrot("7000", "30")
+	//http.HandleFunc("/get_mbrot", getMbrot)
+	//
+	//log.Fatal(http.ListenAndServe(":9999", nil))
+}
+
+func generateMandelBrot(width string, escape string) {
+	log.Printf("Mandelbort Computation starting ... \n")
+
 	var wg sync.WaitGroup
 	id := 0
 	total := len(listServers)
 	for i := 0; i< total;i++ {
 		wg.Add(1)
-		go get(listServers[i].Port, listServers[i].Name, id, total, &wg)
+		go get(listServers[i].Port, listServers[i].Name, id, total, &wg, width, escape)
 		id++
 	}
 	wg.Wait()
 
+	log.Printf("Mandelbrot data generated\n")
+	log.Printf("Starting image generation ...\n")
 
 	if check(){
 		for i:=0;i< total;i++{
@@ -122,11 +133,14 @@ func generateMandelBrot() {
 			}
 		}
 
-		out, _ := os.Create("horizontal_scalability/img.jpeg")
+		log.Printf("Images data decoded ... \n")
+
+		out, _ := os.Create("servers/client/img.jpeg")
 		defer out.Close()
 
 		var opts jpeg.Options
 		opts.Quality = 100
+
 
 		errImg[0] = jpeg.Encode(out, picture[0], &opts)
 		//jpeg.Encode(out, img, nil)
@@ -142,7 +156,7 @@ func generateMandelBrot() {
 		}
 
 		// collect pixel data from each image
-
+		log.Printf("Collecting pixel data from each image ...\n")
 		pixels[0] = DecodePixelsFromImage(picture[0], 0, 0)
 		pixelSum := append(pixels[0])
 		lengthX := (picture[0].Bounds().Max.X)*total
@@ -152,6 +166,7 @@ func generateMandelBrot() {
 			pixelSum = append(pixelSum,pixels[i]...)
 		}
 
+		log.Printf("Creating full image to fit sum of pixels ... \n")
 		// Set a new size for the new image equal to the max width
 		// of bigger image and max height of two images combined
 		newRect := image.Rectangle{
@@ -161,6 +176,8 @@ func generateMandelBrot() {
 				X: lengthX,
 			},
 		}
+
+		log.Printf("Adding colors to image ...\n")
 		finImage := image.NewRGBA(newRect)
 		// This is the cool part, all you have to do is loop through
 		// each Pixel and set the image's color on the go
@@ -171,10 +188,16 @@ func generateMandelBrot() {
 				px.Color,
 			)
 		}
-
+		log.Printf("Drawing Image ... \n")
 		draw.Draw(finImage, finImage.Bounds(), finImage, image.Point{0, 0}, draw.Src)
 
-		filename := "horizontal_scalability/output.png"
+
+		log.Printf("Saving image ...\n")
+		dt := time.Now()
+		//Format MM-DD-YYYY hh:mm:ss
+		date := dt.Format("01-02-2006T15-04-05")
+
+		filename := "servers/images/output" + date + ".png"
 		// Create a new file and write to it
 		out, err := os.Create(filename)
 		if err != nil {
@@ -189,7 +212,7 @@ func generateMandelBrot() {
 
 		log.Printf("I saved your image (%s) buddy!\n", filename)
 	} else {
-		fmt.Printf("The HTTP request failed with error %s\n", err)
+		log.Printf("The HTTP request failed with error %s\n", err)
 	}
 }
 
@@ -200,7 +223,7 @@ func getConnectedServers() {
 	resp, err = http.Get("http://localhost:8090/get_servers")
 
 	if err != nil {
-		fmt.Printf("Proxy on port %d not up", 8090)
+		log.Printf("Proxy on port %d not up", 8090)
 		return
 	}
 
@@ -211,22 +234,11 @@ func getConnectedServers() {
 	err = decoder.Decode(&listServers)
 	if err != nil {
 		if errors.As(err, &unmarshalErr) {
-			fmt.Printf("Bad Response. Wrong Type provided for field "+ unmarshalErr.Field, http.StatusBadRequest)
+			log.Printf("Bad Response. Wrong Type provided for field "+ unmarshalErr.Field, http.StatusBadRequest)
 		} else {
-			fmt.Printf("Bad Request "+err.Error(), http.StatusBadRequest)
+			log.Printf("Bad Request "+err.Error(), http.StatusBadRequest)
 		}
 		return
 	}
-	fmt.Printf("Success", http.StatusOK)
-
-	json_data, err := json.Marshal(listServers)
-
-	if err != nil {
-
-		log.Fatal(err)
+	log.Printf("Success, all servers retrieved (status: %d)", http.StatusOK)
 	}
-
-	fmt.Printf("\n%s", string(json_data))
-}
-
-

@@ -39,8 +39,16 @@ func up(w http.ResponseWriter, req *http.Request) {
 		}
 		return
 	}
-	errorResponse(w, "Success", http.StatusOK)
-	fmt.Print(e)
+
+	json_data, err := json.Marshal(e)
+
+	if err != nil {
+
+		log.Fatal(err)
+	}
+
+	errorResponse(w, "Successfully registered to proxy", http.StatusOK)
+	fmt.Print("server " + string(json_data) + " connected \n")
 
 	if serverMap == nil {
 		serverMap = make(map[string]string)
@@ -62,9 +70,9 @@ func errorResponse(w http.ResponseWriter, message string, httpStatusCode int) {
 }
 
 func getComputation(w http.ResponseWriter, req *http.Request) {
-	fmt.Print("\nGet Computation\n")
+	fmt.Print("Get Computation\n")
 
-	getStatus(w, req)
+	getStatus(w)
 
 	json_data, err := json.Marshal(list)
 
@@ -75,7 +83,7 @@ func getComputation(w http.ResponseWriter, req *http.Request) {
 	w.Write(json_data)
 }
 
-func getStatus(w http.ResponseWriter, req *http.Request) {
+func getStatus(w http.ResponseWriter) {
 	list = nil
 
 	for key, value := range serverMap {
