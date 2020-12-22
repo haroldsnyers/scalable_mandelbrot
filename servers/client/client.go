@@ -95,7 +95,7 @@ func getMbrot(w http.ResponseWriter, req *http.Request) {
 
 func main() {
 	getConnectedServers()
-	generateMandelBrot("7000", "30")
+	generateMandelBrot("40", "30")
 	//http.HandleFunc("/get_mbrot", getMbrot)
 	//
 	//log.Fatal(http.ListenAndServe(":9999", nil))
@@ -138,21 +138,12 @@ func generateMandelBrot(width string, escape string) {
 		out, _ := os.Create("servers/client/img.jpeg")
 		defer out.Close()
 
+		//Using a part of the picture to know the boundary
 		var opts jpeg.Options
 		opts.Quality = 100
-
-
 		errImg[0] = jpeg.Encode(out, picture[0], &opts)
-		//jpeg.Encode(out, img, nil)
 		if errImg[0] != nil {
 			log.Println(errImg[0])
-		}
-
-		for i:=1; i< total;i++{
-			picture[i], _, errImg[i] = image.Decode(bytes.NewReader(data[i]))
-			if errImg[i] != nil {
-				panic(errImg[i])
-			}
 		}
 
 		// collect pixel data from each image
