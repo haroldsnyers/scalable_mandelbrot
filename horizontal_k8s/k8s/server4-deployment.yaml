@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\ProgramData\chocolatey\lib\kubernetes-kompose\tools\kompose.exe
+      convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: server4
+  name: server4
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: server4
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\ProgramData\chocolatey\lib\kubernetes-kompose\tools\kompose.exe
+          convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/resolute: "true"
+        io.kompose.service: server4
+    spec:
+      containers:
+      - env:
+        - name: NAME
+          value: server4
+        - name: PORT
+          value: "8094"
+        image: horizontal_k8s_server4:latest
+        imagePullPolicy: "Never"
+        name: server4
+        ports:
+        - containerPort: 8094
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}
