@@ -1,7 +1,7 @@
 FROM golang:1.14-alpine AS build
 
 WORKDIR /src/
-COPY client.go go.* /src/
+COPY generator.go go.* /src/
 RUN CGO_ENABLED=0 go build -o /bin/demo
 
 FROM scratch

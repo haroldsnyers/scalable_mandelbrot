@@ -54,23 +54,11 @@ func up(w http.ResponseWriter, req *http.Request) {
 func getMbrot(w http.ResponseWriter, req *http.Request) {
 	log.Printf("Mandelbort Computation starting ... \n")
 
-	query := req.URL.Query()
-	widthGet := query.Get("width")
-	maxEscGet := query.Get("escape")
-	if widthGet == "" {
-		width = 7000
-	} else {
-		width, _ = strconv.Atoi(widthGet)
-	}
-	if maxEscGet == "" {
-		maxEsc = 30
-	} else {
-		maxEsc, _ = strconv.Atoi(maxEscGet)
-	}
-
 	_ = req.ParseForm()
 	id, _ = strconv.Atoi(req.FormValue("id"))
 	total, _ = strconv.Atoi(req.FormValue("total"))
+	width, _ = strconv.Atoi(req.FormValue("width"))
+	maxEsc, _ = strconv.Atoi(req.FormValue("escape"))
 
 	log.Printf("Mandelbrot generator : %d/%d\n", id + 1, total)
 

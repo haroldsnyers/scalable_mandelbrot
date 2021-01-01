@@ -7,14 +7,15 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: proxy
-  name: proxy
+    io.kompose.service: generator
+  name: generator
 spec:
+  type: LoadBalancer
   ports:
-  - name: "8090"
-    port: 8090
-    targetPort: 8090
+  - name: "8089"
+    port: 8089
+    targetPort: 8089
   selector:
-    io.kompose.service: proxy
+    io.kompose.service: generator
 status:
   loadBalancer: {}

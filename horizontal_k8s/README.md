@@ -2,27 +2,31 @@
 
 This a system made of a proxy and different servers that run in docker containers. The different containers that will be initialised are defined in the docker-compose.yml file. In this file we define a proxy (application on which the servers sign up ) and which can also be accessed to retrieve the different servers that are running. This system enables us to scale our application mandelbrot horizontally as we can add more servers easily. 
 
+Contrary to the application runnning on docker, this application contains also a generator. This way the client which will ask for the mandelbrot image will have no clue how many servers are running (and doesn't care). It will connect to the generator and request the image. The generator will then ask which server is online and then generate the image which he will send back to the client. 
+
+This system runs in a kubernetes cluster. To test it, I used a minkube to test the cluster locally. I run the minikube application on wsl2 on windows. Here under are the steps you need to do to replicate the application. 
 ## Server configuration
-To run the docker server configuration you will simply need to open a command line and go the "servers" folder.
-At thi spoint first you will need to create if it is not already done a network. This can be done by typing the following.
+First, you will need to install minikube on your linux (but can also work on windows). Then you can start the minkube application with `start minikube`. When minikube is running, type the following:
 
-```
-docker network create resolute
-```
-
-Next you will be able to run the docker-compose which will launch the proxy-like application and the different servers as well. This can be done with the following command : 
 ```shell script
-docker-compose -f docker-compose.yml up
+# linking your docker environment
+eval $(minikube docker-env) 
 ```
-You can also add `-d` flag to run this command in the background.
 
-Finally, you will be able to access the list of servers up by going to 
-`localhost:8090/get_computation`
+Then, you will need to build your docker images to be able tu use them with kubernetes. To do so, go to `horizontal_k8s`in the command line and type the following : 
 
-## Adding Servers
+```shell script
+docker-compose build
+```
 
-To add servers, multiple solutions exist. At the startup, you can simply add more applications such as to have the number of server images in docker-compose that you want. However, it is also possible to add a seperate server by building and running an image externally (manually)
+After you have build and thus tagged your images properly, you can proceed with the following command : 
 
-### adding a server in the docker compose
+```shell script
+kubectl apply -f ./k8s
+```
 
-### adding a server manually with docker build and run 
+This will execute the kubernetes resources and start your deployments and services. 
+TO see your pods running, you can type `kubectl get pods`.
+
+A nice tool is octant, which lets you interact with your cluster in a more user-friendly way. 
+

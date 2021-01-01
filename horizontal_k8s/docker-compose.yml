@@ -7,6 +7,18 @@ services:
     hostname: proxy
     ports:
       - 8090:8090
+    networks:
+      - resolute
+
+  generator:
+    build:
+      context: generator
+      dockerfile: Dockerfile
+    hostname: generator
+    ports:
+      - 8089:8089
+    networks:
+      - resolute
 
   server1:
     build:
@@ -19,6 +31,8 @@ services:
       - 8091:8091
     depends_on:
       - proxy
+    networks:
+      - resolute
 
   server2:
     build:
@@ -31,6 +45,8 @@ services:
       - 8092:8092
     depends_on:
       - proxy
+    networks:
+      - resolute
 
   server3:
     build:
@@ -43,6 +59,8 @@ services:
       - 8093:8093
     depends_on:
       - proxy
+    networks:
+      - resolute
 
   server4:
     build:
@@ -55,3 +73,10 @@ services:
       - 8094:8094
     depends_on:
       - proxy
+    networks:
+      - resolute
+
+networks:
+  resolute:
+    external:
+      name: resolute

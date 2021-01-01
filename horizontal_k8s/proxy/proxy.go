@@ -71,6 +71,7 @@ func errorResponse(w http.ResponseWriter, message string, httpStatusCode int) {
 
 func getComputation(w http.ResponseWriter, req *http.Request) {
 	fmt.Print("Get Computation\n")
+	fmt.Print(serverMap)
 
 	getStatus(w)
 
@@ -92,6 +93,7 @@ func getStatus(w http.ResponseWriter) {
 		var err error
 
 		url:= fmt.Sprintf("http://%s:%s/up", value, key)
+		fmt.Print(url)
 		resp, err = http.Get(url)
 
 		if err != nil {
