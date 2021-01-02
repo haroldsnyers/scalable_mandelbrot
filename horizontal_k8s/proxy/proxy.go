@@ -22,6 +22,16 @@ type InfoServers struct {
 var serverMap map[string]string
 var list []InfoServers
 
+func main() {
+	http.HandleFunc("/prox_connected", up)
+	http.HandleFunc("/get_servers", getServers)
+	http.HandleFunc("/get_mbrot", getSubMandelbrot)
+
+	fmt.Print("Serving ...\n")
+
+	log.Fatal(http.ListenAndServe(":8090", nil))
+}
+
 func up(w http.ResponseWriter, req *http.Request) {
 	// Double check it's a post request being made
 	if req.Method != http.MethodPost {
@@ -44,7 +54,7 @@ func up(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	json_data, err := json.Marshal(e)
+	jsonData, err := json.Marshal(e)
 
 	if err != nil {
 
@@ -52,7 +62,7 @@ func up(w http.ResponseWriter, req *http.Request) {
 	}
 
 	errorResponse(w, "Successfully registered to proxy", http.StatusOK)
-	fmt.Print("server " + string(json_data) + " connected \n")
+	fmt.Print("server " + string(jsonData) + " connected \n")
 
 	if serverMap == nil {
 		serverMap = make(map[string]string)
@@ -69,7 +79,7 @@ func errorResponse(w http.ResponseWriter, message string, httpStatusCode int) {
 	resp := make(map[string]string)
 	resp["message"] = message
 	jsonResp, _ := json.Marshal(resp)
-	w.Write(jsonResp)
+	_, _ = w.Write(jsonResp)
 }
 
 func getServers(w http.ResponseWriter, req *http.Request) {
@@ -78,13 +88,13 @@ func getServers(w http.ResponseWriter, req *http.Request) {
 
 	getStatus(w)
 
-	json_data, err := json.Marshal(list)
+	jsonData, err := json.Marshal(list)
 
 	if err != nil {
 
 		log.Fatal(err)
 	}
-	w.Write(json_data)
+	_, _ = w.Write(jsonData)
 }
 
 func getStatus(w http.ResponseWriter) {
@@ -95,15 +105,16 @@ func getStatus(w http.ResponseWriter) {
 		var resp *http.Response
 		var err error
 
-		url:= fmt.Sprintf("http://%s:%s/up", value, key)
-		fmt.Print(url)
-		resp, err = http.Get(url)
+		slaveUrl:= fmt.Sprintf("http://%s:%s/up", value, key)
+		fmt.Print(slaveUrl)
+		resp, err = http.Get(slaveUrl)
 
 		if err != nil {
 			delete(serverMap, key)
 			fmt.Printf("server on port %s not up, deleting server ...", key)
 		} else {
 			defer resp.Body.Close()
+
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				log.Fatal("Error reading response. ", err)
@@ -131,16 +142,6 @@ func getStatus(w http.ResponseWriter) {
 
 }
 
-func main() {
-	http.HandleFunc("/prox_connected", up)
-	http.HandleFunc("/get_servers", getServers)
-	http.HandleFunc("/get_mbrot", getSubMandelbrot)
-
-	fmt.Print("Serving ...\n")
-
-	log.Fatal(http.ListenAndServe(":8090", nil))
-}
-
 func getSubMandelbrot(w http.ResponseWriter, req *http.Request) {
 	_ = req.ParseForm()
 	id, _ := strconv.Atoi(req.FormValue("id"))
@@ -148,7 +149,7 @@ func getSubMandelbrot(w http.ResponseWriter, req *http.Request) {
 	width := req.FormValue("width")
 	maxEsc := req.FormValue("escape")
 	port := req.FormValue("port")
-	name := req.FormValue("server")
+	nameServer := req.FormValue("server")
 
 	data := url.Values {
 		"total": {strconv.Itoa(total)},
@@ -157,9 +158,7 @@ func getSubMandelbrot(w http.ResponseWriter, req *http.Request) {
 		"escape": {maxEsc},
 	}
 
-	// nServer := strconv.Itoa(id + 1)
-
-	resp, _ := http.PostForm("http://" + name + ":"+ port +"/get_mbrot",data)
+	resp, _ := http.PostForm("http://" +nameServer+ ":"+ port +"/get_mbrot",data)
 
 	log.Printf("Read Bytes ...\n")
 	dataRead, errRead := ioutil.ReadAll(resp.Body)

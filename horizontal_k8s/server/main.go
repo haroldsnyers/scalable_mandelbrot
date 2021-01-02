@@ -47,7 +47,7 @@ var id int
 func up(w http.ResponseWriter, req *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	resp, _ := json.Marshal(infoServer)
-	w.Write(resp)
+	_, _ = w.Write(resp)
 }
 
 
@@ -149,12 +149,12 @@ func render(done chan struct{}, ) {
 	palette = make([]color.RGBA, maxEsc)
 	for i := 0; i < maxEsc-1; i++ {
 		palette[i] = color.RGBA{
-			uint8(rand.Intn(256)),
-			uint8(rand.Intn(256)),
-			uint8(rand.Intn(256)),
-			255}
+			R: uint8(rand.Intn(256)),
+			G: uint8(rand.Intn(256)),
+			B: uint8(rand.Intn(256)),
+			A: 255}
 	}
-	escapeColor = color.RGBA{0, 0, 0, 0}
+	escapeColor = color.RGBA{}
 
 	//draw.Draw(b, bounds, image.NewUniform(color.Black), image.ZP, draw.Src)
 

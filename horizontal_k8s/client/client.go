@@ -48,7 +48,7 @@ func main() {
 	width := 4000
 	escape := 30
 
-	proxyServer = "127.0.0.1:37773"
+	proxyServer = "127.0.0.1:43353"
 	// proxyServer = "localhost:8090"
 
 	getMandelbrot(strconv.Itoa(width), strconv.Itoa(escape))
@@ -164,7 +164,7 @@ func generateMandelBrot(width string, escape string) {
 			)
 		}
 		log.Printf("Drawing Image ... \n")
-		draw.Draw(finImage, finImage.Bounds(), finImage, image.Point{0, 0}, draw.Src)
+		draw.Draw(finImage, finImage.Bounds(), finImage, image.Point{}, draw.Src)
 
 		saveImage()
 	} else {
@@ -174,11 +174,11 @@ func generateMandelBrot(width string, escape string) {
 
 // Decode image.Image's pixel data into []*Pixel
 func DecodePixelsFromImage(img image.Image, offsetX, offsetY int) []*Pixel {
-	pixels := []*Pixel{}
+	var pixels []*Pixel
 	for y := 0; y <= img.Bounds().Max.Y; y++ {
 		for x := 0; x <= img.Bounds().Max.X; x++ {
 			p := &Pixel{
-				Point: image.Point{x + offsetX, y + offsetY},
+				Point: image.Point{X: x + offsetX, Y: y + offsetY},
 				Color: img.At(x, y),
 			}
 			pixels = append(pixels, p)
