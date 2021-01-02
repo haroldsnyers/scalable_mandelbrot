@@ -5,9 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image"
+	"image/jpeg"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
+	"strconv"
 )
 
 type InfoServers struct {
@@ -59,7 +63,6 @@ func up(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
-
 func errorResponse(w http.ResponseWriter, message string, httpStatusCode int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(httpStatusCode)
@@ -69,8 +72,8 @@ func errorResponse(w http.ResponseWriter, message string, httpStatusCode int) {
 	w.Write(jsonResp)
 }
 
-func getComputation(w http.ResponseWriter, req *http.Request) {
-	fmt.Print("Get Computation\n")
+func getServers(w http.ResponseWriter, req *http.Request) {
+	fmt.Print("Get Servers\n")
 	fmt.Print(serverMap)
 
 	getStatus(w)
@@ -130,9 +133,54 @@ func getStatus(w http.ResponseWriter) {
 
 func main() {
 	http.HandleFunc("/prox_connected", up)
-	http.HandleFunc("/get_servers", getComputation)
+	http.HandleFunc("/get_servers", getServers)
+	http.HandleFunc("/get_mbrot", getSubMandelbrot)
 
 	fmt.Print("Serving ...\n")
 
 	log.Fatal(http.ListenAndServe(":8090", nil))
+}
+
+func getSubMandelbrot(w http.ResponseWriter, req *http.Request) {
+	_ = req.ParseForm()
+	id, _ := strconv.Atoi(req.FormValue("id"))
+	total, _ := strconv.Atoi(req.FormValue("total"))
+	width := req.FormValue("width")
+	maxEsc := req.FormValue("escape")
+	port := req.FormValue("port")
+	name := req.FormValue("server")
+
+	data := url.Values {
+		"total": {strconv.Itoa(total)},
+		"id": {strconv.Itoa(id)},
+		"width": {width},
+		"escape": {maxEsc},
+	}
+
+	// nServer := strconv.Itoa(id + 1)
+
+	resp, _ := http.PostForm("http://" + name + ":"+ port +"/get_mbrot",data)
+
+	log.Printf("Read Bytes ...\n")
+	dataRead, errRead := ioutil.ReadAll(resp.Body)
+
+	if errRead != nil {
+		log.Fatalf("ioutil.ReadAll -> %v", errRead)
+	}
+
+	picture, _, errImg := image.Decode(bytes.NewReader(dataRead))
+	if errImg != nil {
+		panic(errImg)
+	}
+
+	buffer := new(bytes.Buffer)
+	if err := jpeg.Encode(buffer, picture, nil); err != nil {
+		log.Println("unable to encode image.")
+	}
+
+	w.Header().Set("Content-Type", "image/png")
+	w.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
+	if _, err := w.Write(buffer.Bytes()); err != nil {
+		log.Println("unable to write image.")
+	}
 }

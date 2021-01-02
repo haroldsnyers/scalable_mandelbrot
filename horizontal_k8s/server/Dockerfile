@@ -7,15 +7,13 @@ FROM golang:1.14-alpine AS build
 ENV GO111MODULE=on
 
 ## We create an /app directory within our
-## image that will hold our application source
-## files
+## image that will hold our application source files
 RUN mkdir /app
 ## We copy everything in the root directory
 ## into our /app directory
 ADD . /app
 ## We specify that we now wish to execute
-## any further commands inside our /app
-## directory
+## any further commands inside our /app directory
 WORKDIR /app
 RUN go mod init go/app
 RUN go mod download

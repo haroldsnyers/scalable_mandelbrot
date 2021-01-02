@@ -10,18 +10,6 @@ services:
     networks:
       - resolute
 
-  generator:
-    build:
-      context: generator
-      dockerfile: Dockerfile
-    hostname: generator
-    ports:
-      - 8089:8089
-    depends_on:
-      - proxy
-    networks:
-      - resolute
-
   server1:
     build:
       context: server

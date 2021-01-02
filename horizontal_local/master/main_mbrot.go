@@ -26,20 +26,6 @@ var err1 error
 var resp2 *http.Response
 var err2 error
 
-// Keep it DRY so don't have to repeat opening file and decode
-func OpenAndDecode(filepath string) (image.Image, string, error) {
-	imgFile, err := os.Open(filepath)
-	if err != nil {
-		panic(err)
-	}
-	defer imgFile.Close()
-	img, format, err := image.Decode(imgFile)
-	if err != nil {
-		panic(err)
-	}
-	return img, format, nil
-}
-
 // Decode image.Image's pixel data into []*Pixel
 func DecodePixelsFromImage(img image.Image, offsetX, offsetY int) []*Pixel {
 	pixels := []*Pixel{}
@@ -72,7 +58,7 @@ func main() {
 	go get(8092, &wg)
 	wg.Add(1)
 	go get(8093, &wg)
-	wg.Wait()
+
 
 	if err1 == nil && err2 == nil{
 
@@ -87,8 +73,8 @@ func main() {
 			log.Fatalf("ioutil.ReadAll -> %v", errorRead2)
 		}
 
-		resp1.Body.Close()
-		resp2.Body.Close()
+		_ = resp1.Body.Close()
+		_ = resp2.Body.Close()
 
 		img1, _, err1 := image.Decode(bytes.NewReader(data1))
 		if err1 != nil {

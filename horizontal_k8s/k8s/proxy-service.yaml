@@ -10,6 +10,7 @@ metadata:
     io.kompose.service: proxy
   name: proxy
 spec:
+  type: LoadBalancer
   ports:
   - name: "8090"
     port: 8090

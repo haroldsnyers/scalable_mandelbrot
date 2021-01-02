@@ -18,7 +18,7 @@ const (
 	rMax   = .5
 	iMin   = -1.
 	iMax   = 1.
-	width  = 7000
+	width  = 4000
 )
 
 var palette []color.RGBA

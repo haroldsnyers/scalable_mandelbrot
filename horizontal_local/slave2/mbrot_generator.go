@@ -42,8 +42,6 @@ func getMbrot(w http.ResponseWriter, req *http.Request) {
 
 	b = image.NewNRGBA(bounds)
 
-
-
 	done := make(chan struct{})
 	ticker := time.NewTicker(time.Millisecond * 1000)
 	go func() {
