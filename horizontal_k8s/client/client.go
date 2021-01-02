@@ -17,7 +17,7 @@ import (
 var finImage image.Image
 
 func main() {
-	width := 4000
+	width := 40
 	escape := 30
 
 	getImage(width, escape)
@@ -27,8 +27,8 @@ func getImage(width int, escape int) {
 	var resp *http.Response
 	var err error
 
-	minikubePort := "127.0.0.1:39547" // external port of proxy in minikube cluster
-	// minikubePort = "localhost:8089"
+	// minikubePort := "127.0.0.1:39547" // external port of proxy in minikube cluster
+	minikubePort := "localhost:8089"
 
 	data := url.Values {
 		"width": {strconv.Itoa(width)},

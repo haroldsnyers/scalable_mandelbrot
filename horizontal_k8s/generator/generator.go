@@ -130,13 +130,14 @@ func generateMandelBrot(width string, escape string) {
 	if check(){
 		for i:=0;i< total;i++{
 
+			log.Printf("Read Bytes ...\n")
 			data[i], errRead[i] = ioutil.ReadAll(resp[i].Body)
 
 			if errRead[i] != nil {
 				log.Fatalf("ioutil.ReadAll -> %v", errRead[i])
 			}
 			_ = resp[i].Body.Close()
-
+			log.Printf("image decoding ...\n")
 			picture[i], _, errImg[i] = image.Decode(bytes.NewReader(data[i]))
 			if errImg[i] != nil {
 				panic(errImg[i])

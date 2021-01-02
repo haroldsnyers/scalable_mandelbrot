@@ -95,7 +95,7 @@ func getMbrot(w http.ResponseWriter, req *http.Request) {
 
 func main() {
 	getConnectedServers()
-	generateMandelBrot("40", "30")
+	generateMandelBrot("4000", "30")
 	//http.HandleFunc("/get_mbrot", getMbrot)
 	//
 	//log.Fatal(http.ListenAndServe(":9999", nil))
