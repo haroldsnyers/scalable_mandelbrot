@@ -34,17 +34,26 @@ Then, you will need to build your docker images to be able tu use them with kube
 docker-compose build
 ```
 
+### deploying using kubectl
 After you have build and thus tagged your images properly, you can proceed with the following command : 
 
 ```shell script
 kubectl apply -f ./k8s
 ```
 
+### deploying using helm
+```shell script
+helm install demo helmchart/ --values helmchart/values.yaml
+```
+
+
+### checking that deployments are running
 This will execute the kubernetes resources and start your deployments and services. 
 To see your pods running, you can type `kubectl get pods`.
 
 A nice tool is octant, which lets you interact with your cluster in a more user-friendly way. 
 
+### creating a tunnel for the proxy
 Finally, you can execute the following command too to expose the proxy to outside world (outside the kubernetes cluster).
 
 ```shell script
