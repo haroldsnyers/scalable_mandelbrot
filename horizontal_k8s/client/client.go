@@ -49,7 +49,7 @@ func main() {
 	width := 400
 	escape := 30
 
-	proxyServer = "127.0.0.1:33669"
+	proxyServer = "127.0.0.1:36437"
 	// proxyServer = "localhost:8090"
 
 	getMandelbrot(strconv.Itoa(width), strconv.Itoa(escape))
