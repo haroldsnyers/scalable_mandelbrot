@@ -36,14 +36,6 @@ spec:
           imagePullPolicy: {{ .Values.server2.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.server2.service.port}}
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
           resources:
       {{- toYaml .Values.resources | nindent 12 }}
       restartPolicy: {{ .Values.restartPolicy }}

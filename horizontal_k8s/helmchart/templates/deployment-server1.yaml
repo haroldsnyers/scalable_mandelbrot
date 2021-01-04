@@ -30,19 +30,11 @@ spec:
           - name: NAME
             value: {{ .Values.server1.name }}
           - name: PORT
-            value: "{{ .Values.server1.service.port}}"
+            value: "{{ .Values.server1.service.port }}"
           image: "{{ .Values.server1.image.repository }}:{{ .Values.server1.image.tag | default .Chart.AppVersion }}"
           name: {{ .Values.server1.name }}
           imagePullPolicy: {{ .Values.server1.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.server1.service.port}}
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            - containerPort: {{ .Values.server1.service.port }}
           resources: {}
       restartPolicy: {{ .Values.restartPolicy }}
