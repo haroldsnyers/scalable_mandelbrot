@@ -45,10 +45,11 @@ var picture [100]image.Image
 var pixels [100][]*Pixel
 
 func main() {
-	width := 4000
+	log.Printf("Starting ... ")
+	width := 400
 	escape := 30
 
-	proxyServer = "127.0.0.1:43353"
+	proxyServer = "127.0.0.1:33669"
 	// proxyServer = "localhost:8090"
 
 	getMandelbrot(strconv.Itoa(width), strconv.Itoa(escape))
@@ -119,7 +120,7 @@ func generateMandelBrot(width string, escape string) {
 
 		log.Printf("Images data decoded ... \n")
 
-		out, _ := os.Create("horizontal_docker/generator/img.jpeg")
+		out, _ := os.Create("horizontal_k8s/images/img.jpeg")
 		defer out.Close()
 
 		//Using a part of the picture to know the boundary

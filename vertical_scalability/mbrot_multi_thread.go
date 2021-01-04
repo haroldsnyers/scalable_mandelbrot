@@ -17,11 +17,11 @@ import (
 const (
 	maxEsc = 30 // when doubled, takes a bit less than two times the generation time
 	// r = -0.75 is the middle of the image (width)
-	rMin   = -8. // left
-	rMax   = 2. // right
+	rMin   = -2. // left
+	rMax   = .5 // right
 	// i = 0 is the middle of the image (height)
-	iMin   = -4.8 // bottom
-	iMax   = 4.8  // top
+	iMin   = -1.2 // bottom
+	iMax   = 1.2  // top
 	width  = 4000 // when doubled, takes a bit more than four times the generation time
 )
 
@@ -44,6 +44,7 @@ func mandelbrot(a complex128) int {
 }
 
 func main() {
+	log.Printf("Starting ... \n")
 
 	done := make(chan struct{})
 	ticker := time.NewTicker(time.Millisecond * 1000)
@@ -53,19 +54,23 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
-				fmt.Print(".")
+
 				i++
 				if i%15 == 0 {
 					fmt.Print(i)
+					fmt.Print(".")
 				}
 			case <-done:
 				ticker.Stop()
 				fmt.Printf("\n\nMandelbrot set rendered into `%s` in %d seconds\n", "mandelbrot_.png", i)
+				log.Printf("End 2 ... \n")
 			}
 		}
 	}()
 
 	render(done)
+	log.Printf("End 1 ... \n")
+
 
 }
 

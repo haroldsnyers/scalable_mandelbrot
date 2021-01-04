@@ -52,6 +52,8 @@ func get(port int, wg *sync.WaitGroup){
 }
 
 func main() {
+	log.Printf("Starting ... \n")
+
 	//go routine for the slaves
 	var wg sync.WaitGroup
 	wg.Add(1)

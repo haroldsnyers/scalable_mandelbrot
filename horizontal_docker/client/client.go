@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
@@ -41,64 +40,38 @@ var data [100][]byte
 var picture [100]image.Image
 var pixels [100][]*Pixel
 
-// Decode image.Image's pixel data into []*Pixel
-func DecodePixelsFromImage(img image.Image, offsetX, offsetY int) []*Pixel {
-	pixels := []*Pixel{}
-	for y := 0; y <= img.Bounds().Max.Y; y++ {
-		for x := 0; x <= img.Bounds().Max.X; x++ {
-			p := &Pixel{
-				Point: image.Point{x + offsetX, y + offsetY},
-				Color: img.At(x, y),
-			}
-			pixels = append(pixels, p)
-		}
-	}
-	return pixels
-}
-//interactions with the slaves
-func get(port string, name string, id int,total int,wg *sync.WaitGroup, width string, escape string){
-	log.Printf("Send computation request to %s\n", name)
-	data := url.Values {
-		"total": {strconv.Itoa(total)},
-		"id": {strconv.Itoa(id)},
-	}
-	if width == "" {
-		resp[id], err[id] = http.PostForm("http://localhost:"+ port +"/get_mbrot",data)
-	} else {
-		resp[id], err[id] = http.PostForm("http://localhost:"+ port +"/get_mbrot?width=" + width + "&escape=" + escape ,data)
-	}
-	defer wg.Done()
-
-}
-
-func check() bool{
-	for i:=0; i< len(err);i ++{
-		if err[i]!= nil{
-			return false
-		}
-	}
-	return true
-}
-
-func getMbrot(w http.ResponseWriter, req *http.Request) {
-	query := req.URL.Query()
-	width := query.Get("width")
-	if width == "" {
-		_, _ = fmt.Fprintf(w, "default width will used: 7000")
-	} else {
-		_, _ = fmt.Fprintf(w, "Width image will be %s", width)
-	}
-
-	//getConnectedServers()
-	//generateMandelBrot(width)
-}
-
 func main() {
+	log.Printf("Starting ... \n")
+
 	getConnectedServers()
-	generateMandelBrot("4000", "30")
-	//http.HandleFunc("/get_mbrot", getMbrot)
-	//
-	//log.Fatal(http.ListenAndServe(":9999", nil))
+	generateMandelBrot("4000", "120")
+}
+
+func getConnectedServers() {
+	var resp *http.Response
+	var err error
+
+	resp, err = http.Get("http://localhost:8090/get_servers")
+
+	if err != nil {
+		log.Printf("Proxy on port %d not up", 8090)
+		return
+	}
+
+	var unmarshalErr *json.UnmarshalTypeError
+
+	decoder := json.NewDecoder(resp.Body)
+	decoder.DisallowUnknownFields()
+	err = decoder.Decode(&listServers)
+	if err != nil {
+		if errors.As(err, &unmarshalErr) {
+			log.Printf("Bad Response. Wrong Type provided for field "+ unmarshalErr.Field, http.StatusBadRequest)
+		} else {
+			log.Printf("Bad Request "+err.Error(), http.StatusBadRequest)
+		}
+		return
+	}
+	log.Printf("Success, all horizontal_docker retrieved (status: %d)", http.StatusOK)
 }
 
 func generateMandelBrot(width string, escape string) {
@@ -207,29 +180,41 @@ func generateMandelBrot(width string, escape string) {
 	}
 }
 
-func getConnectedServers() {
-	var resp *http.Response
-	var err error
-
-	resp, err = http.Get("http://localhost:8090/get_servers")
-
-	if err != nil {
-		log.Printf("Proxy on port %d not up", 8090)
-		return
-	}
-
-	var unmarshalErr *json.UnmarshalTypeError
-
-	decoder := json.NewDecoder(resp.Body)
-	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&listServers)
-	if err != nil {
-		if errors.As(err, &unmarshalErr) {
-			log.Printf("Bad Response. Wrong Type provided for field "+ unmarshalErr.Field, http.StatusBadRequest)
-		} else {
-			log.Printf("Bad Request "+err.Error(), http.StatusBadRequest)
+// Decode image.Image's pixel data into []*Pixel
+func DecodePixelsFromImage(img image.Image, offsetX, offsetY int) []*Pixel {
+	pixels := []*Pixel{}
+	for y := 0; y <= img.Bounds().Max.Y; y++ {
+		for x := 0; x <= img.Bounds().Max.X; x++ {
+			p := &Pixel{
+				Point: image.Point{x + offsetX, y + offsetY},
+				Color: img.At(x, y),
+			}
+			pixels = append(pixels, p)
 		}
-		return
 	}
-	log.Printf("Success, all horizontal_docker retrieved (status: %d)", http.StatusOK)
+	return pixels
+}
+//interactions with the slaves
+func get(port string, name string, id int,total int,wg *sync.WaitGroup, width string, escape string){
+	log.Printf("Send computation request to %s\n", name)
+	data := url.Values {
+		"total": {strconv.Itoa(total)},
+		"id": {strconv.Itoa(id)},
 	}
+	if width == "" {
+		resp[id], err[id] = http.PostForm("http://localhost:"+ port +"/get_mbrot",data)
+	} else {
+		resp[id], err[id] = http.PostForm("http://localhost:"+ port +"/get_mbrot?width=" + width + "&escape=" + escape ,data)
+	}
+	defer wg.Done()
+
+}
+
+func check() bool{
+	for i:=0; i< len(err);i ++{
+		if err[i]!= nil{
+			return false
+		}
+	}
+	return true
+}

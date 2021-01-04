@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ .Values.proxy.name }}-test-connection"
+  labels:
+    {{ .Values.proxy.name }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ .Values.proxy.name }}:{{ .Values.proxy.service.name }}']
+  restartPolicy: Never

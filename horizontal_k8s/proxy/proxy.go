@@ -84,7 +84,6 @@ func errorResponse(w http.ResponseWriter, message string, httpStatusCode int) {
 
 func getServers(w http.ResponseWriter, req *http.Request) {
 	fmt.Print("Get Servers\n")
-	fmt.Print(serverMap)
 
 	getStatus(w)
 
@@ -106,7 +105,6 @@ func getStatus(w http.ResponseWriter) {
 		var err error
 
 		slaveUrl:= fmt.Sprintf("http://%s:%s/up", value, key)
-		fmt.Print(slaveUrl)
 		resp, err = http.Get(slaveUrl)
 
 		if err != nil {
@@ -157,10 +155,10 @@ func getSubMandelbrot(w http.ResponseWriter, req *http.Request) {
 		"width": {width},
 		"escape": {maxEsc},
 	}
-
+	log.Printf("Start generating on %s ...\n", nameServer)
 	resp, _ := http.PostForm("http://" +nameServer+ ":"+ port +"/get_mbrot",data)
+	log.Printf("Finished generating on %s ...\n", nameServer)
 
-	log.Printf("Read Bytes ...\n")
 	dataRead, errRead := ioutil.ReadAll(resp.Body)
 
 	if errRead != nil {

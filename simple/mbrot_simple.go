@@ -38,6 +38,7 @@ func mandelbrot(a complex128) int {
 }
 
 func main() {
+	log.Printf("Starting ... \n")
 
 	done := make(chan struct{})
 	ticker := time.NewTicker(time.Millisecond * 1000)
@@ -47,16 +48,22 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
-				fmt.Print(".")
+				if i % 15 == 0 {
+					fmt.Print(".")
+				}
 				i++
 			case <-done:
 				ticker.Stop()
 				fmt.Printf("\n\nMandelbrot set rendered into `%s` in %d seconds\n", "mandelbrot_.png", i)
+				log.Printf("End 2 ... \n")
+
 			}
 		}
 	}()
 
 	render(done)
+	log.Printf("End 1 ... \n")
+
 
 }
 
